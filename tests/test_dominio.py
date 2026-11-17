@@ -2,13 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from presupuesto.dominio import (
-    Ejecucion,
-    EstadoPartida,
-    calcular_ejecucion,
-    clasificar,
-    repartir_en_meses,
-)
+from presupuesto.dominio import repartir_por_pesos
 
 D = Decimal
 
@@ -17,154 +11,106 @@ def pesos(*valores: int) -> tuple[Decimal, ...]:
     return tuple(D(v) for v in valores)
 
 
-# ---------- repartir_en_meses ----------
+def montos(*valores: str) -> tuple[Decimal, ...]:
+    return tuple(D(v) for v in valores)
 
 
-def test_repartir_en_meses_cuando_divide_exacto_da_doce_partes_iguales() -> None:
-    # Arrange
-    total = D("1200.00")
+def test_repartir_por_pesos_cuando_divide_exacto_reparte_en_proporcion() -> None:
+    # Arrange: AWS L 1,000.00 por computadoras: Contabilidad 20, Ventas 10, Bodega 10
+    monto = D("1000.00")
+    computadoras = pesos(20, 10, 10)
     # Act
-    meses = repartir_en_meses(total)
+    partes = repartir_por_pesos(monto, computadoras)
     # Assert
-    assert meses == (D("100.00"),) * 12
+    assert partes == montos("500.00", "250.00", "250.00")
 
 
-def test_repartir_en_meses_cuando_sobran_centavos_van_a_los_primeros_meses() -> None:
-    # Arrange: 1000 / 12 = 83.333...; truncado suma 999.96 y sobran 4 centavos
-    total = D("1000.00")
+def test_repartir_por_pesos_cuando_sobra_un_centavo_va_al_primero_si_empatan() -> None:
+    # Arrange: 1000 / 3 = 333.333...; truncado suma 999.99 y sobra 1 centavo
+    monto = D("1000.00")
     # Act
-    meses = repartir_en_meses(total)
+    partes = repartir_por_pesos(monto, pesos(1, 1, 1))
     # Assert
-    assert meses == (D("83.34"),) * 4 + (D("83.33"),) * 8
+    assert partes == montos("333.34", "333.33", "333.33")
 
 
-def test_repartir_en_meses_cuando_un_residuo_es_mayor_gana_aunque_sea_mes_posterior() -> None:
+def test_repartir_por_pesos_cuando_sobran_dos_centavos_van_a_los_dos_primeros() -> None:
+    # Arrange: 2.00 / 3 = 0.666...; truncado suma 1.98 y sobran 2 centavos.
+    # Redondear en vez de truncar daría 0.67 × 3 = 2.01: un centavo inventado.
+    monto = D("2.00")
+    # Act
+    partes = repartir_por_pesos(monto, pesos(1, 1, 1))
+    # Assert
+    assert partes == montos("0.67", "0.67", "0.66")
+
+
+def test_repartir_por_pesos_cuando_un_residuo_es_mayor_gana_aunque_vaya_despues() -> None:
     # Arrange: 1.00 en proporción 1:2 → 0.333 (residuo 0.0033) y 0.666 (residuo 0.0067)
-    total = D("1.00")
-    proporcion = pesos(1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    monto = D("1.00")
     # Act
-    meses = repartir_en_meses(total, proporcion)
-    # Assert: el centavo que sobra va a febrero, no a enero
-    assert meses == (D("0.33"), D("0.67")) + (D("0.00"),) * 10
+    partes = repartir_por_pesos(monto, pesos(1, 2))
+    # Assert: el centavo que sobra va al segundo, no al primero
+    assert partes == montos("0.33", "0.67")
 
 
-def test_repartir_en_meses_cuando_hay_estacionalidad_respeta_los_pesos() -> None:
-    # Arrange: diciembre pesa 13 veces un mes normal
-    total = D("2400.00")
-    proporcion = pesos(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 13)
+def test_repartir_por_pesos_con_nota_de_credito_reparte_en_negativo() -> None:
+    # Arrange: nota de crédito de AWS por −L 100.00, misma regla por computadoras
+    monto = D("-100.00")
     # Act
-    meses = repartir_en_meses(total, proporcion)
+    partes = repartir_por_pesos(monto, pesos(20, 10, 10))
     # Assert
-    assert meses == (D("100.00"),) * 11 + (D("1300.00"),)
+    assert partes == montos("-50.00", "-25.00", "-25.00")
 
 
-def test_repartir_en_meses_cuando_el_total_es_cero_da_doce_ceros() -> None:
-    assert repartir_en_meses(D("0.00")) == (D("0.00"),) * 12
+def test_repartir_por_pesos_con_negativo_que_no_divide_exacto_es_simetrico() -> None:
+    # Arrange: el mismo caso que 1000 / 3, pero en negativo
+    monto = D("-1000.00")
+    # Act
+    partes = repartir_por_pesos(monto, pesos(1, 1, 1))
+    # Assert
+    assert partes == montos("-333.34", "-333.33", "-333.33")
+
+
+def test_repartir_por_pesos_con_peso_cero_ese_receptor_recibe_cero() -> None:
+    # Arrange: Bodega todavía no tiene computadoras
+    monto = D("100.00")
+    # Act
+    partes = repartir_por_pesos(monto, pesos(1, 0, 1))
+    # Assert
+    assert partes == montos("50.00", "0.00", "50.00")
+
+
+def test_repartir_por_pesos_con_un_solo_receptor_le_da_todo() -> None:
+    assert repartir_por_pesos(D("123.45"), pesos(7)) == montos("123.45")
+
+
+def test_repartir_por_pesos_con_monto_cero_da_ceros() -> None:
+    assert repartir_por_pesos(D("0.00"), pesos(3, 7)) == montos("0.00", "0.00")
 
 
 @pytest.mark.parametrize(
-    "total",
-    [D("0.01"), D("0.05"), D("0.11"), D("999.99"), D("1000.01"), D("123456789.07")],
+    "monto",
+    [D("0.01"), D("0.05"), D("999.99"), D("1000.01"), D("-0.07"), D("-12345.67"), D("98765432.10")],
 )
-def test_repartir_en_meses_con_cualquier_total_la_suma_es_exacta(total: Decimal) -> None:
+def test_repartir_por_pesos_con_cualquier_monto_la_suma_es_exacta(monto: Decimal) -> None:
     # Act
-    meses = repartir_en_meses(total)
+    partes = repartir_por_pesos(monto, pesos(3, 7, 11, 13))
     # Assert
-    assert sum(meses, D("0.00")) == total
-    assert all(mes == mes.quantize(D("0.01")) for mes in meses)
+    assert sum(partes, D("0.00")) == monto
+    assert all(parte == parte.quantize(D("0.01")) for parte in partes)
 
 
 @pytest.mark.parametrize(
-    ("total", "proporcion"),
+    ("monto", "proporcion"),
     [
-        (D("-1.00"), None),  # negativo
-        (D("1.001"), None),  # más de 2 decimales
-        (D("100.00"), pesos(1, 1, 1)),  # no son 12 pesos
-        (D("100.00"), pesos(*([0] * 12))),  # todos cero
-        (D("100.00"), pesos(-1, *([1] * 11))),  # un peso negativo
+        (D("1.001"), pesos(1, 1)),  # más de 2 decimales
+        (D("100.00"), ()),  # ningún receptor
+        (D("100.00"), pesos(0, 0, 0)),  # todos los pesos en cero
+        (D("100.00"), pesos(-1, 2)),  # un peso negativo
     ],
 )
-def test_repartir_en_meses_con_datos_invalidos_lanza_value_error(
-    total: Decimal, proporcion: tuple[Decimal, ...] | None
+def test_repartir_por_pesos_con_datos_invalidos_lanza_value_error(
+    monto: Decimal, proporcion: tuple[Decimal, ...]
 ) -> None:
     with pytest.raises(ValueError):
-        if proporcion is None:
-            repartir_en_meses(total)
-        else:
-            repartir_en_meses(total, proporcion)
-
-
-# ---------- calcular_ejecucion ----------
-
-
-@pytest.mark.parametrize(
-    ("presupuestado", "real", "variacion", "porcentaje"),
-    [
-        (D("1000.00"), D("850.00"), D("-150.00"), D("85.00")),
-        (D("1000.00"), D("1234.56"), D("234.56"), D("123.46")),  # 123.456 sube
-        (D("300.00"), D("100.00"), D("-200.00"), D("33.33")),  # 33.333 baja
-        (D("1000.00"), D("0.00"), D("-1000.00"), D("0.00")),
-    ],
-)
-def test_calcular_ejecucion_da_variacion_y_porcentaje_exactos(
-    presupuestado: Decimal, real: Decimal, variacion: Decimal, porcentaje: Decimal
-) -> None:
-    # Act
-    ejecucion = calcular_ejecucion(presupuestado, real)
-    # Assert
-    assert ejecucion == Ejecucion(presupuestado, real, variacion, porcentaje)
-
-
-def test_calcular_ejecucion_en_un_medio_exacto_redondea_hacia_arriba() -> None:
-    # Arrange: 0.01 / 200 × 100 = 0.005 → HALF_UP da 0.01; el bancario daría 0.00
-    # Act
-    ejecucion = calcular_ejecucion(D("200.00"), D("0.01"))
-    # Assert
-    assert ejecucion.porcentaje == D("0.01")
-
-
-def test_calcular_ejecucion_sin_presupuesto_no_tiene_porcentaje() -> None:
-    # Act
-    ejecucion = calcular_ejecucion(D("0.00"), D("50.00"))
-    # Assert
-    assert ejecucion == Ejecucion(D("0.00"), D("50.00"), D("50.00"), None)
-
-
-# ---------- clasificar ----------
-
-
-@pytest.mark.parametrize(
-    ("presupuestado", "real", "estado"),
-    [
-        (D("1000.00"), D("500.00"), EstadoPartida.DENTRO),
-        (D("1000.00"), D("899.90"), EstadoPartida.DENTRO),  # 89.99 %
-        (D("1000.00"), D("899.99"), EstadoPartida.ALERTA),  # se muestra 90.00 %
-        (D("1000.00"), D("900.00"), EstadoPartida.ALERTA),  # justo el umbral
-        (D("1000.00"), D("1000.00"), EstadoPartida.ALERTA),  # gastado todo, no excedido
-        (D("1000.00"), D("1000.01"), EstadoPartida.EXCEDIDO),  # se muestra 100.00 %
-        (D("0.00"), D("0.00"), EstadoPartida.DENTRO),
-        (D("0.00"), D("50.00"), EstadoPartida.EXCEDIDO),  # gasto sin presupuesto
-        (D("1000.00"), D("-20.00"), EstadoPartida.DENTRO),  # devolución neta
-    ],
-)
-def test_clasificar_da_el_estado_de_la_partida(
-    presupuestado: Decimal, real: Decimal, estado: EstadoPartida
-) -> None:
-    # Arrange
-    ejecucion = calcular_ejecucion(presupuestado, real)
-    # Act / Assert
-    assert clasificar(ejecucion) == estado
-
-
-def test_clasificar_con_umbral_propio_lo_respeta() -> None:
-    # Arrange
-    ejecucion = calcular_ejecucion(D("1000.00"), D("750.00"))
-    # Act / Assert
-    assert clasificar(ejecucion, umbral=D("75")) == EstadoPartida.ALERTA
-
-
-@pytest.mark.parametrize("umbral", [D("0"), D("-5"), D("100.01")])
-def test_clasificar_con_umbral_fuera_de_rango_lanza_value_error(umbral: Decimal) -> None:
-    ejecucion = calcular_ejecucion(D("1000.00"), D("500.00"))
-    with pytest.raises(ValueError):
-        clasificar(ejecucion, umbral=umbral)
+        repartir_por_pesos(monto, proporcion)
