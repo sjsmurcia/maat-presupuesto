@@ -5,7 +5,7 @@ persiste. Dinero siempre en Decimal con 2 decimales; nunca float.
 """
 
 from collections.abc import Sequence
-from decimal import Decimal
+from decimal import ROUND_DOWN,Decimal
 
 CENTAVO = Decimal("0.01")
 
@@ -31,4 +31,30 @@ def repartir_por_pesos(monto: Decimal, pesos: Sequence[Decimal]) -> tuple[Decima
       un receptor, ningún peso negativo y no todos cero.
     Cualquier violación lanza ValueError.
     """
-    raise NotImplementedError("jm: escribe esta función")
+    if monto !=monto.quantize(CENTAVO):
+        raise ValueError("El monto no puede tener mas de 2 decimales")
+    if not pesos:
+        raise ValueError("Tiene que haber al menos un receptor")
+    if any(peso<0 for peso in pesos):
+        raise ValueError("ningun peso puede ser negativo")
+    total_pesos= sum(pesos, Decimal(0))
+    if total_pesos==0:
+        raise ValueError("los pesos no pueden ser todos cero")
+    #se reparte el valor absoluto para truncar y el mayor residuo
+    absoluto = abs(monto)
+    exactas =[absoluto*peso/total_pesos for peso in pesos]
+    partes = [exacta.quantize(CENTAVO, ROUND_DOWN) for exacta  in exactas]
+
+    #truncar nunca inventa centavos 
+    centavos_sobrantes = int((absoluto - sum(partes, Decimal(0))) / CENTAVO)
+    por_mayor_residuo = sorted(
+        range(len(pesos)),
+        key=lambda i: exactas[i] -partes[i],
+        reverse=True
+    )
+    for i in por_mayor_residuo[:centavos_sobrantes]:
+        partes[i] +=CENTAVO
+    if monto <0:
+        return tuple(-parte for parte in partes)
+    return tuple(partes)
+
