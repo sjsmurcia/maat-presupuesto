@@ -126,4 +126,34 @@ def distribuir(monto: Decimal, regla: Regla) -> tuple[Asignacion, ...]:
       asignación. Un CeCo al que le toca cero aparece igual, con 0.00;
     - la suma de las asignaciones es EXACTAMENTE el monto.
     """
-    raise NotImplementedError("jm: escribe esta función")
+    validar_regla(regla)
+    _validar_monto_contra_fijos(monto, regla.fijos)
+    resto_a_repartir = monto - _sumar_fijos(regla.fijos)
+    pesos = [peso.valor for peso in regla.resto]
+    partes_del_resto = repartir_por_pesos(resto_a_repartir, pesos)
+    return _juntar_por_ceco(regla.fijos, regla.resto, partes_del_resto)
+
+
+def _sumar_fijos(fijos: tuple[MontoFijo, ...]) -> Decimal:
+    return sum((fijo.monto for fijo in fijos), Decimal("0.00"))
+
+
+def _validar_monto_contra_fijos(monto: Decimal, fijos: tuple[MontoFijo, ...]) -> None:
+    suma_fijos = _sumar_fijos(fijos)
+    if fijos and monto < suma_fijos:
+        raise ValueError(
+            f"El monto {monto} no alcanza para los fijos, que suman {suma_fijos}"
+        )
+
+
+def _juntar_por_ceco(
+    fijos: tuple[MontoFijo, ...],
+    resto: tuple[PesoDelResto, ...],
+    partes_del_resto: tuple[Decimal, ...],
+) -> tuple[Asignacion, ...]:
+    por_ceco: dict[str, Decimal] = {}
+    for fijo in fijos:
+        por_ceco[fijo.ceco] = fijo.monto
+    for peso, parte in zip(resto, partes_del_resto, strict=True):
+        por_ceco[peso.ceco] = por_ceco.get(peso.ceco, Decimal("0.00")) + parte
+    return tuple(Asignacion(ceco, monto) for ceco, monto in por_ceco.items())
