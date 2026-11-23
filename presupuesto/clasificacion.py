@@ -1,8 +1,4 @@
-"""Qué se hace con un gasto real según el CeCo donde se cargó.
-
-Puro: recibe el tipo de CeCo y si tiene regla, y devuelve el destino. La
-decisión vive en una tabla, no en un if que crece con cada caso.
-"""
+"""Qué se hace con un gasto real según el tipo de CeCo donde se cargó."""
 
 import enum
 
@@ -28,15 +24,10 @@ _DESTINOS: dict[tuple[TipoCeco, bool], Destino] = {
 
 
 def clasificar_movimiento(tipo: TipoCeco, tiene_regla: bool) -> Destino:
-    """Decide el destino de un gasto real al cierre del mes.
+    """Decide si el gasto va directo, se distribuye o queda centralizado.
 
-    - ESPECIFICO sin regla: DIRECTO;
-    - GENERICO con regla: DISTRIBUIDO;
-    - GENERICO sin regla: CENTRALIZADO. El cierre no se traba por un CeCo
-      nuevo; el tablero avisa que quedó dinero sin distribuir;
-    - INSTITUCIONAL sin regla: CENTRALIZADO;
-    - un ESPECIFICO o un INSTITUCIONAL CON regla es un error de catálogo:
-      ValueError, porque esos CeCos no se reparten.
+    Un genérico sin regla queda centralizado para que un CeCo nuevo no trabe
+    el cierre; el tablero avisa que quedó dinero sin distribuir.
     """
     destino = _DESTINOS.get((tipo, tiene_regla))
     if destino is None:

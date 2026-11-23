@@ -1,11 +1,6 @@
 """Regla de distribución de un CeCo genérico: a quién le toca cuánto.
 
-Una regla se arma en dos tramos: primero los montos fijos y después el
-resto, que se reparte por porcentaje o por inductor. Nunca queda dinero sin
-distribuir: lo que no se lleva un fijo va al resto.
-
-Puro: recibe la regla y el monto y devuelve las asignaciones. La matemática
-del reparto vive en `dominio.repartir_por_pesos`, en un solo lugar.
+Primero los montos fijos; el resto se reparte por porcentaje o por inductor.
 """
 
 import enum
@@ -51,15 +46,7 @@ class Asignacion:
 def validar_regla(regla: Regla) -> None:
     """Lanza ValueError si la regla no se puede guardar ni aplicar.
 
-    Es la MISMA validación al guardar la regla y al distribuir: la regla de
-    negocio vive en un solo lugar.
-
-    - el resto tiene al menos un receptor: la regla siempre dice a dónde va
-      lo que no se llevan los fijos;
-    - un CeCo no se repite dentro del mismo tramo;
-    - cada monto fijo es mayor que cero y tiene como máximo 2 decimales;
-    - por PORCENTAJE: ningún valor negativo, y suman exactamente 100;
-    - por INDUCTOR: ningún valor negativo, y no todos en cero.
+    Es la misma validación al guardar y al distribuir: la regla vive en un solo lugar.
     """
     _validar_resto_con_receptores(regla.resto)
     _validar_cecos_sin_repetir(regla.fijos, "los fijos")
@@ -70,7 +57,6 @@ def validar_regla(regla: Regla) -> None:
 
 
 def _validar_resto_con_receptores(resto: tuple[PesoDelResto, ...]) -> None:
-    """la regla simpre dice donde va lo que no se llevan los montos fijos"""
     if not resto:
         raise ValueError("La regla necesita al menos un receptor para el resto")
 
@@ -109,22 +95,10 @@ def _validar_total_del_resto(
 
 
 def distribuir(monto: Decimal, regla: Regla) -> tuple[Asignacion, ...]:
-    """Reparte `monto` según `regla`.
+    """Reparte `monto` según `regla`: los fijos tal cual y el resto por sus pesos.
 
-    - valida la regla con `validar_regla`;
-    - los fijos se llevan su monto tal cual; el resto (monto menos la suma
-      de los fijos) se reparte con `repartir_por_pesos` según los valores
-      del resto;
-    - CON fijos: si el monto es menor que la suma de los fijos, ValueError.
-      Eso incluye cualquier nota de crédito (monto negativo), que en la v1
-      se reparte a mano;
-    - SIN fijos: un monto negativo (nota de crédito) se reparte igual, en
-      negativo;
-    - el resultado trae una asignación por CeCo, en el orden en que aparece
-      por primera vez (fijos primero, después el resto). Si un CeCo está en
-      los fijos Y en el resto, sus dos partes se suman en una sola
-      asignación. Un CeCo al que le toca cero aparece igual, con 0.00;
-    - la suma de las asignaciones es EXACTAMENTE el monto.
+    Con fijos, un monto que no alcanza para cubrirlos (una nota de crédito, por
+    ejemplo) se rechaza: en la v1 ese caso se reparte a mano.
     """
     validar_regla(regla)
     _validar_monto_contra_fijos(monto, regla.fijos)
