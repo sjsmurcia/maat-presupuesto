@@ -6,17 +6,22 @@
 - No adelantarse al alcance: una decisión de negocio se pregunta, de a una, con una recomendación. Lo decidido se escribe el mismo día en `docs/decisiones.md` y en Jira (proyecto MP).
 
 ## Qué es
-Presupuesto por centros de costo (CeCo) y de beneficio (CeBe), con su ejecución contra lo real. Es el proyecto final de Ingeniería de Software II y un futuro módulo de Maat (el ERP contable de la firma, que usa el mismo stack). El repo es **PÚBLICO**: ningún nombre ni dato de clientes, empresas o personas; los ejemplos son ficticios.
+Presupuesto por cuenta contable, con su ejecución contra lo real por área. La contabilidad registra una sola línea por gasto, con su centro de costo (CeCo) o de beneficio (CeBe), y las reglas de distribución reparten lo compartido. Es el proyecto final de Ingeniería de Software II y un futuro módulo de Maat (el ERP contable de la firma, que usa el mismo stack). El repo es **PÚBLICO**: ningún nombre ni dato de clientes, empresas o personas; los ejemplos son ficticios.
 
 - Stack: Python 3.12, FastAPI, PostgreSQL, Flutter web (PWA). Hoy solo existe el dominio (`presupuesto/`) con pytest.
 - Arquitectura: `practica-6/arquitectura.md` (C4).
 - Decisiones vigentes: `docs/decisiones.md`. El detalle y la discusión, en Jira MP-1 y sus comentarios.
 - Lo que es de una máquina (rutas, cuentas, tokens) va en `CLAUDE.local.md`, que git ignora.
 
+## Vocabulario
+- **Partida** es el asiento contable y nada más. Las filas del presupuesto son **líneas de detalle** de una cuenta.
+- El **responsable** es el área que presupuesta una línea de detalle. El CeCo no va en el presupuesto: va en el asiento.
+- Las definiciones completas están en `docs/decisiones.md`.
+
 ## Reglas de oro
 1. **Dinero = `Decimal`, nunca float**, con 2 decimales. La v1 trabaja solo en lempiras. Los pesos, porcentajes y cantidades llevan los decimales que necesiten; un resultado en dinero se lleva a 2 sin perder centavos (`repartir_por_pesos`).
 2. **El presupuesto controla, no bloquea**, y lo afecta solo lo contabilizado (el real que se carga).
-3. **El control va contra el CeCo responsable, antes de distribuir**; la distribución es costeo y no modifica el presupuesto.
+3. **Se presupuestan cuentas, no centros de costo.** La misma regla de distribución reparte el presupuesto de la cuenta (al aprobarse) y lo real (al cierre); cada área se mide por lo ejecutado contra lo presupuestado, y un gasto compartido que se dispara lo explica su dueño.
 4. **Mientras el mes está abierto, lo calculado no se guarda**: la ejecución y el tablero se calculan desde el presupuesto, el real y las reglas. **Al cerrar, se guarda la foto del cierre** (lo distribuido con las reglas de ese día), y esa foto no se modifica: cambiar una regla después no reescribe un mes cerrado.
 
 ## Arquitectura (capas limpias, módulo 6)
