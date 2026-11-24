@@ -48,3 +48,6 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 
 ## Modelo de datos
 24. **Varias empresas, separadas en la base.** Cada empresa tiene su catálogo, sus centros, su presupuesto, sus reglas y su real, y la base (RLS) impide que una empresa vea los datos de otra: como en Maat, la firma lleva varias empresas.
+25. **Las áreas son un catálogo propio de cada empresa, en varios niveles.** Cada área puede tener un área superior (Comercial agrupa a Ventas y Mercadeo) y los totales suben por ese árbol, aparte del árbol de centros: así el área no depende de cómo se ordenen los centros.
+26. **Cada CeCo pertenece a exactamente un área, y el área sale del CeCo: no se digita en el asiento.** Así la suma de las áreas siempre cuadra con el total real.
+27. **La foto del cierre guarda el área que tenía cada CeCo ese día**, para que reorganizar las áreas no reescriba un mes cerrado.
