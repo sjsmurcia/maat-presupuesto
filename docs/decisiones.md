@@ -51,3 +51,4 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 25. **Las áreas son un catálogo propio de cada empresa, en varios niveles.** Cada área puede tener un área superior (Comercial agrupa a Ventas y Mercadeo) y los totales suben por ese árbol, aparte del árbol de centros: así el área no depende de cómo se ordenen los centros.
 26. **Cada CeCo pertenece a exactamente un área, y el área sale del CeCo: no se digita en el asiento.** Así la suma de las áreas siempre cuadra con el total real.
 27. **La foto del cierre guarda el área que tenía cada CeCo ese día**, para que reorganizar las áreas no reescriba un mes cerrado.
+28. **Cualquier área, de cualquier nivel, puede tener CeCos y presupuestar líneas de detalle**, igual que los centros (decisión 8). El tablero de un área superior separa lo propio de lo que suma de sus sub-áreas.
