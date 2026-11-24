@@ -45,3 +45,6 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 ## Alcance
 22. **Entra seguro**: presupuesto por cuenta, árbol de centros, reglas, cierre y tablero por área.
 23. **Entra solo si hay tiempo**: resultado por carrera (CeBe) y proyectos. Si entran proyectos, sus costos son solo los directos marcados con el proyecto.
+
+## Modelo de datos
+24. **Varias empresas, separadas en la base.** Cada empresa tiene su catálogo, sus centros, su presupuesto, sus reglas y su real, y la base (RLS) impide que una empresa vea los datos de otra: como en Maat, la firma lleva varias empresas.
