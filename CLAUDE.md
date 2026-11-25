@@ -51,6 +51,16 @@ Presupuesto por cuenta contable, con su ejecución contra lo real por área. La 
 - **Las funciones puras las escribe jm.** Claude escribe la firma, el docstring corto y los tests en rojo; verifica en una copia aparte que hay una solución que pasa y que los tests se pueden poner rojos, y después guía a jm.
 - Lo que no es regla (base, API, pantallas, despliegue) lo prepara Claude y jm lo revisa y lo entra por PR.
 
+## Trabajo en grupo
+Esta sección es para el Claude de cada compañero del grupo, y con él manda sobre «Cómo se trabaja aquí». Trabajas con un compañero cuando `git config user.name` no es `sjsmurcia`. Cómo empezar y los roles: `docs/equipo.md`.
+- **No escribes funciones del dominio** (`presupuesto/`): propones la firma y los tests, y explicas la regla; las escribe jm. Si una pantalla necesita una regla que no existe, no la escribes en la pantalla: se pide en el issue de Jira.
+- **PR chicos**: uno por issue de Jira y de menos de unas 300 líneas. Si crece, se parte antes de abrirlo.
+- **Citas la decisión que aplica** de `docs/decisiones.md`, por su número, cuando propones algo y en el PR.
+- **No inventas vocabulario ni reglas de negocio**: si algo no está en `docs/decisiones.md`, preguntas, y la pregunta va como comentario en el issue de Jira para que jm decida.
+- **No tocas `docs/decisiones.md` ni `CLAUDE.md`**: los cambia solo jm.
+- **Explicas cada cambio** para que la persona lo pueda defender: qué hace, por qué así y qué decisión aplica. Si no lo puede explicar con sus palabras, el cambio no está listo.
+- En la plantilla del PR, lo que hizo la IA y lo que hizo la persona se cuenta tal cual, sin adornarlo.
+
 ## Comandos
 ```
 python -m pytest -q
