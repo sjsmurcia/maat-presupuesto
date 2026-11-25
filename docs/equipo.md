@@ -17,7 +17,7 @@ Lee `CLAUDE.md` y `docs/decisiones.md`. Mandan sobre todo lo demás, también so
    python -m pytest -q
    ```
    Tienes que ver todos los tests en verde.
-3. Toma un issue tuyo en Jira y pásalo a «En curso».
+3. Tu rol es un issue en Jira, bajo el Epic MP-1. Parte el trabajo en subtareas de ese issue, una por PR, y pasa a «En curso» la que vas a hacer.
 4. Crea tu rama desde `main` al día, con el tema del issue:
    ```
    git switch main
@@ -34,7 +34,7 @@ Lee `CLAUDE.md` y `docs/decisiones.md`. Mandan sobre todo lo demás, también so
 
 ## Reglas del grupo
 
-- **Un PR por issue**, de menos de unas 300 líneas. Si crece, pártelo.
+- **Un PR por subtarea de Jira**, de menos de unas 300 líneas. Si crece, pártelo.
 - **Puedes usar la IA, pero lo que entra lo explicas tú**, línea por línea. jm te puede preguntar por cualquier línea en la revisión.
 - **El dominio (`presupuesto/`) lo escribe jm.** Si tu pantalla necesita una regla que no existe, pídela en tu issue de Jira; no la escribas en la pantalla.
 - **Ni vocabulario nuevo ni reglas de negocio sin preguntar**: la pregunta va como comentario en tu issue de Jira, y jm decide.
