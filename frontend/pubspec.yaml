@@ -1,0 +1,46 @@
+name: maat_presupuesto
+description: "Frontend web de Maat Presupuesto: presupuesto por cuenta y su ejecución por área."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.0
+
+# Las mismas librerías y versiones que el frontend de Maat: este será su
+# módulo de presupuesto, y las pantallas tienen que poder pasarse tal cual.
+dependencies:
+  decimal: ^3.2.5
+  dio: ^5.10.0
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.3.2
+  go_router: ^17.3.0
+  intl: ^0.20.2
+  # EXACTA, como en Maat: el mismo glifo que el lienzo de diseño.
+  material_symbols_icons: 4.2960.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.3.0
+
+flutter:
+  uses-material-design: true
+
+  # IBM Plex empaquetada (licencia OFL en assets/fuentes/OFL.txt): sin
+  # descargas en tiempo de ejecución, igual que Maat.
+  fonts:
+    - family: IBM Plex Sans
+      fonts:
+        - asset: assets/fuentes/IBMPlexSans-Regular.ttf
+        - asset: assets/fuentes/IBMPlexSans-Medium.ttf
+          weight: 500
+        - asset: assets/fuentes/IBMPlexSans-SemiBold.ttf
+          weight: 600
+    - family: IBM Plex Mono
+      fonts:
+        - asset: assets/fuentes/IBMPlexMono-Regular.ttf
+        - asset: assets/fuentes/IBMPlexMono-Medium.ttf
+          weight: 500
