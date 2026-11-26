@@ -84,3 +84,6 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 45. **Un monto que no alcanza para los fijos (decisión 17) se avisa, pero no bloquea el cierre.** Antes de cerrar se puede repartir a mano, con motivo; si se cierra sin repartir, queda centralizado en el genérico, como uno sin regla (decisión 12), y lo explica su dueño.
 46. **Los meses se cierran en orden**: solo se cierra el mes abierto más antiguo. Un mes cerrado no se reabre (decisión 21); lo que aparezca después entra en el mes abierto.
 47. **Los umbrales de la lectura los configura cada empresa.** De inicio: sobregiro arriba del 100 % de lo presupuestado, subejecución abajo del 90 % y dentro entre los dos. En la v1 valen para todas las cuentas de la empresa, y la lectura la calcula una función pura que recibe los dos umbrales.
+
+## Infraestructura
+48. **El sitio y la API van en Vercel, en el mismo dominio, y la base en PostgreSQL gestionado de Azure.** Vercel sirve el Flutter web y FastAPI como función con Python 3.12, mientras que las funciones de Azure Static Web Apps llegan solo a 3.11. La base es un servidor flexible B1MS de la cuenta de estudiante, gratis el primer año, en una de las regiones que esa cuenta permite, y guarda solo datos ficticios.
