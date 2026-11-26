@@ -13,7 +13,7 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 
 ## Producto
 1. **Sistema independiente**, con repo público. A futuro será el módulo de presupuesto de Maat (el ERP contable de la firma) y leerá lo real del libro diario; por eso usa el mismo stack.
-2. **Lo real entra por archivo** (Excel/CSV), para servir con cualquier sistema contable.
+2. **Lo real entra por archivo** (Excel/CSV), para servir con cualquier sistema contable; en un segundo paso se lee de Maat (decisión 37).
 3. **La v1 trabaja solo en lempiras.** El archivo del real llega ya convertido, como queda en el libro.
 
 ## Dinero
@@ -66,3 +66,10 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 34. **La v1 presupuesta ingresos, costos y gastos**: toda cuenta de detalle de naturaleza INGRESO, COSTO o GASTO. En los ingresos la lectura va al revés (cobrar de más es bueno y cobrar de menos es lo que se explica); sale de una tabla por naturaleza, con los mismos umbrales. El resultado por CeBe sigue fuera (decisión 23).
 35. **El presupuesto también se importa, con una plantilla que se descarga del sistema**, solo mientras el ejercicio está en borrador: `cuenta, descripcion, responsable, generico` (solo en gasto compartido) y los 12 meses. Cada archivo agrega sus líneas al borrador, así cada área manda el suyo, con vista previa y todo o nada (decisión 40); una línea repetida (misma cuenta, descripción y responsable) es un error. La captura a mano queda para corregir o agregar.
 36. **La pantalla del presupuesto muestra, en solo lectura, el aprobado del año anterior**: por cuenta siempre y por línea cuando la línea ya existía (misma cuenta, descripción y responsable). La plantilla de importación lo trae lleno. Los reportes y exportaciones fuera del tablero no son parte de este proyecto.
+
+## Cómo entran los datos
+37. **Maat Presupuesto maneja todo lo del presupuesto, y a Maat no se le cambia nada.** Para no tener la misma información dos veces, el catálogo, los centros y el real vienen de Maat, y aquí se guarda lo propio: tipo, área y regla de cada centro, bases y presupuesto. Va en dos pasos dentro de la v1. Primero por archivo, con las columnas de la importación de asientos de Maat más el centro (`comprobante, fecha, descripcion, cuenta, centro_costo, debe, haber` y, opcional, `descripcion_linea`). Después, un adaptador del borde lee de la API de Maat el catálogo, los centros y los asientos contabilizados, con un botón «Traer de Maat» junto a «Importar archivo»; el dominio no cambia.
+38. **Lo que se repite cada mes es automático; a mano queda solo lo que decide una persona o lo que vive en otro sistema.** Con el segundo paso de la decisión 37, cada mes solo se revisa y se cierra: el real llega de Maat, y el reparto, la comparación y el tablero los calcula el sistema. El tipo, el área y la regla de cada centro se cargan una vez y se mantienen; el presupuesto, una vez al año, y las bases, unas veces al año.
+39. **Los catálogos (cuentas, centros y áreas) entran la primera vez por archivo, con plantillas que se descargan del sistema**, con vista previa y todo o nada. Después se mantienen a mano: agregar, renombrar o inactivar, sin borrar. Con «Traer de Maat», las cuentas y los centros llegan de Maat y aquí se completa lo que Maat no tiene; las áreas son siempre de Maat Presupuesto.
+40. **El archivo del real entra entero o no entra.** Si una fila tiene error no se carga ninguna: se corrige el archivo y se sube completo, para que el real del mes cuadre con el libro.
+41. **Un archivo nuevo del mes abierto reemplaza completo al anterior**, que queda en el historial como reemplazado, con su fecha y quién lo subió. Un mes cerrado no acepta archivos.
