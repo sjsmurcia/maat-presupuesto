@@ -10,6 +10,7 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 - **Fotografía**: los porcentajes de una regla, fijos durante su vigencia.
 - **Original / vigente**: el presupuesto aprobado, que ya no se edita, y el original más sus ajustes.
 - **Ajuste presupuestario**: un traslado, o un aumento o una rebaja, que se registra después de aprobar.
+- **Base**: la lista de valores por destino con que una regla reparte por inductor (empleados, metros cuadrados…).
 
 ## Producto
 1. **Sistema independiente**, con repo público. A futuro será el módulo de presupuesto de Maat (el ERP contable de la firma) y leerá lo real del libro diario; por eso usa el mismo stack.
@@ -32,7 +33,7 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 12. **Un genérico sin regla queda centralizado**, para que un CeCo nuevo no trabe el cierre; el tablero lo avisa. Un específico o un institucional con regla es un error de catálogo.
 
 ## Reglas de distribución
-13. **Una regla siempre reparte el 100 %.** Tiene dos tramos: primero los montos fijos y después el resto, por porcentaje (suma 100) o por inductor. Si un CeCo está en los dos tramos, sus partes se suman.
+13. **Una regla siempre reparte el 100 %.** Tiene dos tramos: primero los montos fijos y después el resto, por porcentaje (suma 100) o por inductor, que se puede partir en pedazos (decisión 43). Si un CeCo está en los dos tramos, sus partes se suman.
 14. **Un gasto con varias formas de reparto es una sola regla con tramos**, no varias reglas.
 15. **La misma regla se aplica dos veces**: al presupuesto de la cuenta cuando se aprueba y a lo real en cada cierre.
 16. **La fotografía vale por ejercicio y tiene fecha de vigencia**, para poder cambiarla por período sin tocar lo ya cerrado.
@@ -73,3 +74,8 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 39. **Los catálogos (cuentas, centros y áreas) entran la primera vez por archivo, con plantillas que se descargan del sistema**, con vista previa y todo o nada. Después se mantienen a mano: agregar, renombrar o inactivar, sin borrar. Con «Traer de Maat», las cuentas y los centros llegan de Maat y aquí se completa lo que Maat no tiene; las áreas son siempre de Maat Presupuesto.
 40. **El archivo del real entra entero o no entra.** Si una fila tiene error no se carga ninguna: se corrige el archivo y se sube completo, para que el real del mes cuadre con el libro.
 41. **Un archivo nuevo del mes abierto reemplaza completo al anterior**, que queda en el historial como reemplazado, con su fecha y quién lo subió. Un mes cerrado no acepta archivos.
+
+## Reglas y bases
+42. **Una regla por gasto.** Un genérico tiene una regla por cada gasto que recibe (energía, vigilancia, teléfono…): cada regla es de un genérico y una cuenta, con su fotografía y sus tramos, y sus montos fijos salen solo de ese gasto. Un gasto de un genérico sin regla queda centralizado (decisión 12, leída por gasto).
+43. **El resto de una regla se puede partir en pedazos por porcentaje**, y cada pedazo va entero a un centro o se reparte según una base. Por ejemplo, después de los fijos, el 50 % a Administración y el 50 % entre las sucursales según los metros cuadrados. Un solo nivel: un pedazo no se vuelve a partir. Primero se parte el resto y después cada pedazo, las dos veces sin perder un centavo (decisión 5). Quien no lo necesita usa un solo pedazo.
+44. **Las bases se guardan aparte y las reglas las usan.** Una base es una lista de números por destino con el nombre que le pone la empresa: el sistema no sabe qué representan. Vale desde un mes, como la fotografía, y entra por archivo con plantilla (`destino, valor` y el mes desde el que vale), con vista previa y todo o nada; se corrige a mano. Varias reglas usan la misma base, que se actualiza una sola vez, y una regla puede usar la base completa o solo algunos destinos. Los meses cerrados conservan su foto.
