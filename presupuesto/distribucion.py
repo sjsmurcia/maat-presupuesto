@@ -49,7 +49,34 @@ def validar_regla(regla: Regla) -> None:
 
     Es la misma validación al guardar y al distribuir: la regla vive en un solo lugar.
     """
-    raise NotImplementedError("jm: valida los fijos y los pedazos")
+    _validar_cecos_sin_repetir(regla.fijos, "los fijos")
+    _validar_montos_fijos(regla.fijos)
+    _validar_pedazos(regla.pedazos)
+    for pedazo in regla.pedazos:
+        _validar_receptores(pedazo.receptores)
+
+
+def _validar_pedazos(pedazos: tuple[Pedazo, ...]) -> None:
+    # 1. sin pedazos
+    if not pedazos:
+        raise ValueError("La regla necesita al menos un pedazo")
+    # 2. algún porcentaje <= 0
+    if any(pedazo.porcentaje <= 0 for pedazo in pedazos):
+        raise ValueError("El porcentaje de un pedazo tiene que ser mayor a cero")
+    total = sum((pedazo.porcentaje for pedazo in pedazos), Decimal(0))
+    if total != CIEN:
+        raise ValueError(f"Los porcentajes tienen que sumar 100 y suman {total}")
+
+
+def _validar_receptores(receptores: tuple[Receptor, ...]) -> None:
+    if not receptores:
+        raise ValueError("Un pedazo necesita al menos un receptor")
+    _validar_cecos_sin_repetir(receptores, "un pedazo")
+    if any(receptor.valor < 0 for receptor in receptores):
+        raise ValueError("Ningun valor de un receptor puede ser negativo")
+    total = sum((receptor.valor for receptor in receptores), Decimal(0))
+    if total == 0:
+        raise ValueError("Los valores de un pedazo no pueden ser todos cero")
 
 
 def _validar_cecos_sin_repetir(
