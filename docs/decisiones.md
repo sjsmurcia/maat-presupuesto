@@ -37,7 +37,7 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 14. **Un gasto con varias formas de reparto es una sola regla con tramos**, no varias reglas.
 15. **La misma regla se aplica dos veces**: al presupuesto de la cuenta cuando se aprueba y a lo real en cada cierre.
 16. **La fotografía vale por ejercicio y tiene fecha de vigencia**, para poder cambiarla por período sin tocar lo ya cerrado.
-17. **Con fijos, un monto que no alcanza para cubrirlos se rechaza** (por ejemplo, una nota de crédito). En la v1 ese caso se reparte a mano.
+17. **Con fijos, un monto que no alcanza para cubrirlos se rechaza** (por ejemplo, una nota de crédito): al cierre se avisa y se puede repartir a mano (decisión 45).
 
 ## Control y cierre
 18. **El presupuesto controla, no bloquea**, y lo afecta solo lo contabilizado. Los compromisos o reservas (órdenes de compra) quedan fuera de la v1.
@@ -79,3 +79,8 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 42. **Una regla por gasto.** Un genérico tiene una regla por cada gasto que recibe (energía, vigilancia, teléfono…): cada regla es de un genérico y una cuenta, con su fotografía y sus tramos, y sus montos fijos salen solo de ese gasto. Un gasto de un genérico sin regla queda centralizado (decisión 12, leída por gasto).
 43. **El resto de una regla se puede partir en pedazos por porcentaje**, y cada pedazo va entero a un centro o se reparte según una base. Por ejemplo, después de los fijos, el 50 % a Administración y el 50 % entre las sucursales según los metros cuadrados. Un solo nivel: un pedazo no se vuelve a partir. Primero se parte el resto y después cada pedazo, las dos veces sin perder un centavo (decisión 5). Quien no lo necesita usa un solo pedazo.
 44. **Las bases se guardan aparte y las reglas las usan.** Una base es una lista de números por destino con el nombre que le pone la empresa: el sistema no sabe qué representan. Vale desde un mes, como la fotografía, y entra por archivo con plantilla (`destino, valor` y el mes desde el que vale), con vista previa y todo o nada; se corrige a mano. Varias reglas usan la misma base, que se actualiza una sola vez, y una regla puede usar la base completa o solo algunos destinos. Los meses cerrados conservan su foto.
+
+## Cierre y tablero
+45. **Un monto que no alcanza para los fijos (decisión 17) se avisa, pero no bloquea el cierre.** Antes de cerrar se puede repartir a mano, con motivo; si se cierra sin repartir, queda centralizado en el genérico, como uno sin regla (decisión 12), y lo explica su dueño.
+46. **Los meses se cierran en orden**: solo se cierra el mes abierto más antiguo. Un mes cerrado no se reabre (decisión 21); lo que aparezca después entra en el mes abierto.
+47. **Los umbrales de la lectura los configura cada empresa.** De inicio: sobregiro arriba del 100 % de lo presupuestado, subejecución abajo del 90 % y dentro entre los dos. En la v1 valen para todas las cuentas de la empresa, y la lectura la calcula una función pura que recibe los dos umbrales.
