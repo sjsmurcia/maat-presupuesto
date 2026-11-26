@@ -19,7 +19,7 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 5. **Repartir no pierde ni inventa un centavo**: se trunca y los centavos sobrantes van por mayor residuo.
 
 ## Presupuesto
-6. **Se presupuestan cuentas contables, no centros de costo.** La fila es cuenta × línea de detalle × responsable × mes. No lleva CeCo.
+6. **Se presupuestan cuentas contables, no centros de costo.** La fila es cuenta × línea de detalle × responsable × mes. No lleva CeCo, salvo la línea de un gasto compartido, que dice de qué genérico es (decisión 29).
 7. **Los meses se agrupan en períodos** (por ejemplo, cuatrimestres); el tablero muestra mes, período y acumulado.
 
 ## Centros
@@ -45,3 +45,11 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 ## Alcance
 22. **Entra seguro**: presupuesto por cuenta, árbol de centros, reglas, cierre y tablero por área.
 23. **Entra solo si hay tiempo**: resultado por carrera (CeBe) y proyectos. Si entran proyectos, sus costos son solo los directos marcados con el proyecto.
+
+## Modelo de datos
+24. **Varias empresas, separadas en la base.** Cada empresa tiene su catálogo, sus centros, su presupuesto, sus reglas y su real, y la base (RLS) impide que una empresa vea los datos de otra: como en Maat, la firma lleva varias empresas.
+25. **Las áreas son un catálogo propio de cada empresa, en varios niveles.** Cada área puede tener un área superior (Comercial agrupa a Ventas y Mercadeo) y los totales suben por ese árbol, aparte del árbol de centros: así el área no depende de cómo se ordenen los centros.
+26. **Cada CeCo pertenece a exactamente un área, y el área sale del CeCo: no se digita en el asiento.** Así la suma de las áreas siempre cuadra con el total real.
+27. **La foto del cierre guarda el área que tenía cada CeCo ese día**, para que reorganizar las áreas no reescriba un mes cerrado.
+28. **Cualquier área, de cualquier nivel, puede tener CeCos y presupuestar líneas de detalle**, igual que los centros (decisión 8). El tablero de un área superior separa lo propio de lo que suma de sus sub-áreas.
+29. **El presupuesto de un gasto compartido también se reparte** con la regla de su genérico, igual que lo real (decisión 15), para que cada área compare su parte del presupuesto contra su parte de lo real. Por eso esa línea de detalle dice de qué genérico es: sin ese dato no se sabe con qué regla partirla.
