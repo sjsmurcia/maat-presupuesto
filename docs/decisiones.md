@@ -8,6 +8,8 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 - **Responsable**: el área que presupuesta una línea de detalle y responde por ella.
 - **CeCo / CeBe**: centro de costo (gasto) y centro de beneficio (ingreso). Son una dimensión del asiento, no cuentas.
 - **Fotografía**: los porcentajes de una regla, fijos durante su vigencia.
+- **Original / vigente**: el presupuesto aprobado, que ya no se edita, y el original más sus ajustes.
+- **Ajuste presupuestario**: un traslado, o un aumento o una rebaja, que se registra después de aprobar.
 
 ## Producto
 1. **Sistema independiente**, con repo público. A futuro será el módulo de presupuesto de Maat (el ERP contable de la firma) y leerá lo real del libro diario; por eso usa el mismo stack.
@@ -20,7 +22,7 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 
 ## Presupuesto
 6. **Se presupuestan cuentas contables, no centros de costo.** La fila es cuenta × línea de detalle × responsable × mes. No lleva CeCo, salvo la línea de un gasto compartido, que dice de qué genérico es (decisión 29).
-7. **Los meses se agrupan en períodos** (por ejemplo, cuatrimestres); el tablero muestra mes, período y acumulado.
+7. **Los meses se agrupan en períodos que define cada empresa** (decisión 33); el tablero muestra mes, período y acumulado.
 
 ## Centros
 8. **Los centros son un árbol aparte del catálogo de cuentas.** Cada centro apunta a su superior, todos pueden recibir movimiento y la unidad de negocio es el nivel superior del árbol. Los totales suben por el árbol.
@@ -53,3 +55,14 @@ Lo decidido y su porqué, en una línea cada una. La discusión completa está e
 27. **La foto del cierre guarda el área que tenía cada CeCo ese día**, para que reorganizar las áreas no reescriba un mes cerrado.
 28. **Cualquier área, de cualquier nivel, puede tener CeCos y presupuestar líneas de detalle**, igual que los centros (decisión 8). El tablero de un área superior separa lo propio de lo que suma de sus sub-áreas.
 29. **El presupuesto de un gasto compartido también se reparte** con la regla de su genérico, igual que lo real (decisión 15), para que cada área compare su parte del presupuesto contra su parte de lo real. Por eso esa línea de detalle dice de qué genérico es: sin ese dato no se sabe con qué regla partirla.
+
+## Permisos
+30. **Todo se controla por permisos, y un rol es un juego de permisos dentro de una empresa.** Nada queda amarrado a una persona: cada acción (editar catálogos y reglas, capturar, aprobar y ajustar el presupuesto, cargar el real, cerrar el mes, ver el tablero) es un permiso, con un código al estilo de Maat (`presupuesto.aprobar`). La v1 trae dos roles: el analista de presupuesto, con todos los permisos, y el responsable de área, que consulta el presupuesto y el tablero de sus áreas y sub-áreas. Las pantallas preguntan por el permiso, nunca por el nombre del rol.
+
+## Ciclo del presupuesto
+31. **El presupuesto se aprueba completo, una vez al año, no por área.** El original ya no se edita, los ejercicios anteriores se consultan como histórico en solo lectura, y lo que cambie después de aprobar entra como ajuste presupuestario.
+32. **En la v1 entran los dos tipos de ajuste**: traslados (mueven un monto entre líneas o meses sin cambiar el total) y aumentos o rebajas (cambian el total del año). Llevan motivo y fecha, y solo tocan meses abiertos. El tablero compara contra el vigente, y el original se sigue viendo.
+33. **Los períodos los define cada empresa en cada ejercicio; el sistema no fija ninguna agrupación.** Hay opciones rápidas (mensual, bimestral, trimestral, cuatrimestral, semestral, anual) y rangos propios, siempre de meses seguidos, sin traslaparse y cubriendo los 12. Un ejercicio nuevo propone los del anterior, y al aprobar el presupuesto quedan fijos.
+34. **La v1 presupuesta ingresos, costos y gastos**: toda cuenta de detalle de naturaleza INGRESO, COSTO o GASTO. En los ingresos la lectura va al revés (cobrar de más es bueno y cobrar de menos es lo que se explica); sale de una tabla por naturaleza, con los mismos umbrales. El resultado por CeBe sigue fuera (decisión 23).
+35. **El presupuesto también se importa, con una plantilla que se descarga del sistema**, solo mientras el ejercicio está en borrador: `cuenta, descripcion, responsable, generico` (solo en gasto compartido) y los 12 meses. Cada archivo agrega sus líneas al borrador, así cada área manda el suyo, con vista previa y todo o nada (decisión 40); una línea repetida (misma cuenta, descripción y responsable) es un error. La captura a mano queda para corregir o agregar.
+36. **La pantalla del presupuesto muestra, en solo lectura, el aprobado del año anterior**: por cuenta siempre y por línea cuando la línea ya existía (misma cuenta, descripción y responsable). La plantilla de importación lo trae lleno. Los reportes y exportaciones fuera del tablero no son parte de este proyecto.
