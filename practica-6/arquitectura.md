@@ -38,7 +38,7 @@ flowchart TB
     contable["<b>Sistema contable de la empresa</b><br/>(p. ej. Maat)<br/>[Sistema externo]"]
     archivo[/"<b>Archivo del real</b><br/>[Excel o CSV]"/]
 
-    subgraph maat["Maat Presupuesto (hosting: por definir)"]
+    subgraph maat["Maat Presupuesto (sitio y API en Vercel, base en Azure: ADR-1)"]
         app["<b>App web</b><br/>[Flutter web, PWA]<br/>Pantallas de carga, cierre y tablero; service worker escrito a mano para funcionar offline"]
         api["<b>API</b><br/>[Python, FastAPI]<br/>Expone el presupuesto, el real, las reglas y el cierre; las reglas de distribución son funciones puras en presupuesto/"]
         db[("<b>Base de datos</b><br/>[PostgreSQL]<br/>CeCo, CeBe, presupuesto, real, reglas, proyectos y resultados del cierre")]
@@ -71,4 +71,4 @@ El CI no es un contenedor en ejecución: corre en GitHub Actions (`.github/workf
 - **Tecnologías:** no quité ninguna. Pregunté si eran las mismas de Maat: sí, el stack es el mismo a propósito, para poder llevar después las reglas y las pantallas a Maat.
 - **Contenedores:** no sobraba ni faltaba ninguno. Aclaré que hoy en el repo solo existen las reglas en Python, las pruebas y el CI; la app, la API y la base son lo planeado.
 - **Justificación de separar las reglas:** el borrador decía solo «mantenibilidad y testeabilidad». La razón real es que después vamos a integrar el sistema con Maat y sus módulos, y por eso agregué Maat como ejemplo de sistema contable y la flecha de integración futura en el nivel 1.
-- **Hosting:** no está decidido, así que queda «por definir» en vez de inventar un proveedor.
+- **Hosting:** no estaba decidido, así que quedó «por definir» en vez de inventar un proveedor. Después se decidió en el [ADR-1](../docs/adr/0001-sitio-y-api-en-vercel-base-en-azure.md).
