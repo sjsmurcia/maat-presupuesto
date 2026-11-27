@@ -3,6 +3,7 @@ from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import Engine
 
 from backend.app import app
 from backend.cuentas import cuenta_a_json
@@ -14,6 +15,7 @@ from tests.api.datos_de_prueba import (
     EMPRESA_D,
     RESPONSABLE,
     encabezado_de,
+    ejecutar_sql,
 )
 
 
@@ -118,3 +120,15 @@ def test_listar_cuentas_de_empresa_sin_acceso_o_inexistente_devuelve_el_mismo_40
     # Assert: no se revela si la empresa existe
     assert respuesta.status_code == 404
     assert respuesta.json() == {"mensaje": f"No existe la empresa {empresa}"}
+
+
+def test_listar_cuentas_con_el_acceso_desactivado_devuelve_404(
+    cliente: TestClient, motor: Engine
+) -> None:
+    # Arrange: al analista le quitaron el acceso a la empresa C
+    ejecutar_sql(motor, "UPDATE accesos SET activo = false WHERE usuario_id = :u", u=ANALISTA)
+    # Act
+    respuesta = cliente.get(f"/api/empresas/{EMPRESA_C}/cuentas", headers=encabezado_de(ANALISTA))
+    # Assert
+    assert respuesta.status_code == 404
+    assert respuesta.json() == {"mensaje": f"No existe la empresa {EMPRESA_C}"}
