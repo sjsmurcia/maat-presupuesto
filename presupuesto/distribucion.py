@@ -103,6 +103,9 @@ def distribuir(monto: Decimal, regla: Regla) -> tuple[Asignacion, ...]:
     El resto se reparte dos veces, sin perder un centavo: entre los pedazos, y
     después cada pedazo entre sus receptores.
     """
+    validar_regla(regla)
+    _validar_monto_contra_fijos(monto, regla.fijos)
+
     raise NotImplementedError("jm: reparte los fijos y después cada pedazo")
 
 
