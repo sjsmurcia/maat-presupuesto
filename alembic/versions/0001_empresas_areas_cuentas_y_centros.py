@@ -45,8 +45,11 @@ def _crear_empresas_y_areas() -> None:
         "areas",
         sa.Column("id", sa.Uuid(), primary_key=True, server_default=UUID_NUEVO),
         sa.Column("empresa_id", sa.Uuid(), sa.ForeignKey("empresas.id"), nullable=False),
+        sa.Column("codigo", sa.String(30), nullable=False),
         sa.Column("nombre", sa.String(200), nullable=False),
         sa.Column("area_superior_id", sa.Uuid(), nullable=True),
+        sa.Column("activa", sa.Boolean(), nullable=False, server_default=sa.text("true")),
+        sa.UniqueConstraint("empresa_id", "codigo"),
         sa.UniqueConstraint("empresa_id", "nombre"),
         sa.UniqueConstraint("empresa_id", "id"),
         sa.ForeignKeyConstraint(
@@ -87,6 +90,7 @@ def _crear_centros() -> None:
         sa.Column("codigo_superior", sa.String(30), nullable=True),
         sa.Column("tipo", sa.String(15), nullable=False),
         sa.Column("area_id", sa.Uuid(), nullable=False),
+        sa.Column("activo", sa.Boolean(), nullable=False, server_default=sa.text("true")),
         sa.ForeignKeyConstraint(
             ["empresa_id", "codigo_superior"], ["centros.empresa_id", "centros.codigo"]
         ),
