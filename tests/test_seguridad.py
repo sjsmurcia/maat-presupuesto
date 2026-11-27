@@ -6,7 +6,7 @@ import pytest
 from backend.configuracion import leer_configuracion
 from backend.seguridad import (
     TokenInvalidoError,
-    comparar_hash,
+    es_el_mismo_hash,
     emitir_jwt,
     generar_refresh,
     hash_refresh,
@@ -53,7 +53,7 @@ def test_partir_refresh_generado_devuelve_su_sesion_y_un_secreto_con_ese_hash() 
     sesion_id, secreto = partir_refresh(token)
     # Assert
     assert sesion_id == USUARIO
-    assert comparar_hash(hash_refresh(secreto), token_hash)
+    assert es_el_mismo_hash(hash_refresh(secreto), token_hash)
 
 
 @pytest.mark.parametrize("token", ["sin-punto", "no-es-uuid.secreto", f"{USUARIO}."])

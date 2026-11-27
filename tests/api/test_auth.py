@@ -1,10 +1,18 @@
 import pytest
 from fastapi.testclient import TestClient
 from httpx import Response
+from sqlalchemy import Engine
 
 from backend.auth import CREDENCIALES_INVALIDAS, SESION_VENCIDA
 from backend.seguridad import verificar_jwt
-from tests.api.datos_de_prueba import ANALISTA, CONFIGURACION, PASSWORD, encabezado_de
+from tests.api.datos_de_prueba import (
+    ANALISTA,
+    CONFIGURACION,
+    INACTIVO,
+    PASSWORD,
+    encabezado_de,
+    ejecutar_sql,
+)
 
 
 def _entrar(
@@ -93,3 +101,50 @@ def test_logout_sin_token_de_acceso_devuelve_401(cliente: TestClient) -> None:
     assert respuesta.status_code == 401
     assert respuesta.json() == {"mensaje": "Inicia sesión para continuar."}
     assert respuesta.headers["WWW-Authenticate"] == "Bearer"
+
+
+def test_refresh_vencido_devuelve_401(cliente: TestClient, motor: Engine) -> None:
+    # Arrange: la sesión venció ayer
+    refresh = _entrar(cliente).json()["refresh_token"]
+    ejecutar_sql(
+        motor, "UPDATE sesiones SET expira_en = now() - interval '1 day' WHERE usuario_id = :u",
+        u=ANALISTA,
+    )
+    # Act
+    respuesta = _refrescar(cliente, refresh)
+    # Assert
+    assert respuesta.status_code == 401
+    assert respuesta.json() == {"mensaje": SESION_VENCIDA}
+
+
+def test_refresh_de_un_usuario_desactivado_devuelve_401(cliente: TestClient, motor: Engine) -> None:
+    # Arrange: entró, y después lo desactivaron
+    refresh = _entrar(cliente).json()["refresh_token"]
+    ejecutar_sql(motor, "UPDATE usuarios SET activo = false WHERE id = :u", u=ANALISTA)
+    # Act
+    respuesta = _refrescar(cliente, refresh)
+    # Assert
+    assert respuesta.status_code == 401
+    assert respuesta.json() == {"mensaje": SESION_VENCIDA}
+
+
+def test_refresh_con_la_sesion_buena_y_el_secreto_cambiado_devuelve_401(cliente: TestClient) -> None:
+    # Arrange: la sesión existe, pero el secreto no es el suyo
+    sesion_id, _, _ = _entrar(cliente).json()["refresh_token"].partition(".")
+    # Act
+    respuesta = _refrescar(cliente, f"{sesion_id}.un-secreto-adivinado")
+    # Assert
+    assert respuesta.status_code == 401
+    assert respuesta.json() == {"mensaje": SESION_VENCIDA}
+
+
+def test_logout_con_el_refresh_de_otro_usuario_no_lo_revoca(cliente: TestClient) -> None:
+    # Arrange: el refresh es del analista y el logout lo pide otro usuario
+    refresh = _entrar(cliente).json()["refresh_token"]
+    # Act
+    respuesta = cliente.post(
+        "/api/auth/logout", json={"refresh_token": refresh}, headers=encabezado_de(INACTIVO)
+    )
+    # Assert: responde igual, sin revelar nada, y el refresh del analista sigue valiendo
+    assert respuesta.status_code == 204
+    assert _refrescar(cliente, refresh).status_code == 200
