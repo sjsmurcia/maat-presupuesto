@@ -3,6 +3,8 @@
 import uuid
 from datetime import timedelta
 
+from sqlalchemy import Engine, text
+
 from backend.configuracion import Configuracion
 from backend.seguridad import crear_hasher, emitir_jwt
 
@@ -26,3 +28,9 @@ def encabezado_de(usuario_id: uuid.UUID) -> dict[str, str]:
         CONFIGURACION.jwt_secreto, usuario_id=usuario_id, tipo="access", ttl=timedelta(minutes=5)
     )
     return {"Authorization": f"Bearer {token}"}
+
+
+def ejecutar_sql(motor: Engine, sql: str, **valores: object) -> None:
+    """Cambia datos como dueño de la base, para armar un caso que la API no puede armar."""
+    with motor.begin() as conexion:
+        conexion.execute(text(sql), valores)

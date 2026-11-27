@@ -18,7 +18,7 @@ from backend.db.sesion import sesion_de_la_api
 from backend.errores import ErrorDeLaApi
 from backend.seguridad import (
     TokenInvalidoError,
-    comparar_hash,
+    es_el_mismo_hash,
     emitir_jwt,
     generar_refresh,
     hash_refresh,
@@ -151,7 +151,7 @@ def _sesion_del_refresh(sesion: Session, token: str, *, bloquear: bool) -> Sesio
     if partes is None:
         return None
     fila = sesion.get(Sesion, partes[0], with_for_update=bloquear)
-    if fila is None or not comparar_hash(fila.refresh_token_hash, hash_refresh(partes[1])):
+    if fila is None or not es_el_mismo_hash(fila.refresh_token_hash, hash_refresh(partes[1])):
         return None
     return fila
 
