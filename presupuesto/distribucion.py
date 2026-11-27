@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 
-from presupuesto.dominio import CENTAVO
+from presupuesto.dominio import CENTAVO, repartir_por_pesos
 
 CIEN = Decimal(100)
 
@@ -57,10 +57,8 @@ def validar_regla(regla: Regla) -> None:
 
 
 def _validar_pedazos(pedazos: tuple[Pedazo, ...]) -> None:
-    # 1. sin pedazos
     if not pedazos:
         raise ValueError("La regla necesita al menos un pedazo")
-    # 2. algún porcentaje <= 0
     if any(pedazo.porcentaje <= 0 for pedazo in pedazos):
         raise ValueError("El porcentaje de un pedazo tiene que ser mayor a cero")
     total = sum((pedazo.porcentaje for pedazo in pedazos), Decimal(0))
@@ -105,8 +103,20 @@ def distribuir(monto: Decimal, regla: Regla) -> tuple[Asignacion, ...]:
     """
     validar_regla(regla)
     _validar_monto_contra_fijos(monto, regla.fijos)
+    por_ceco: dict[str, Decimal] = {fijo.ceco: fijo.monto for fijo in regla.fijos}
+    resto = monto - _sumar_fijos(regla.fijos)
+    porcentajes = [pedazo.porcentaje for pedazo in regla.pedazos]
+    partes = repartir_por_pesos(resto, porcentajes)
+    for pedazo, parte in zip(regla.pedazos, partes, strict=True):
+        _sumar_pedazo(por_ceco, pedazo, parte)
+    return tuple(Asignacion(ceco, total) for ceco, total in por_ceco.items())
 
-    raise NotImplementedError("jm: reparte los fijos y después cada pedazo")
+
+def _sumar_pedazo(por_ceco: dict[str, Decimal], pedazo: Pedazo, parte: Decimal) -> None:
+    valores = [receptor.valor for receptor in pedazo.receptores]
+    montos = repartir_por_pesos(parte, valores)
+    for receptor, monto in zip(pedazo.receptores, montos, strict=True):
+        por_ceco[receptor.ceco] = por_ceco.get(receptor.ceco, Decimal("0.00")) + monto
 
 
 def _sumar_fijos(fijos: tuple[MontoFijo, ...]) -> Decimal:
