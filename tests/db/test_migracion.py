@@ -7,14 +7,17 @@ from alembic.migration import MigrationContext
 from backend.db.modelos import Base
 from tests.db.base_de_pruebas import EMPRESA_A, correr_alembic
 
-TABLAS = {"empresas", "areas", "cuentas", "centros"}
+TABLAS = {
+    "empresas", "areas", "cuentas", "centros",
+    "usuarios", "roles", "permisos", "roles_permisos", "accesos", "accesos_areas", "sesiones",
+}
 
 
 def _tablas(motor: Engine) -> set[str]:
     return set(inspect(motor).get_table_names()) - {"alembic_version"}
 
 
-def test_migracion_upgrade_head_crea_las_cuatro_tablas(motor: Engine) -> None:
+def test_migracion_upgrade_head_crea_todas_las_tablas(motor: Engine) -> None:
     # Act
     tablas = _tablas(motor)
     # Assert
