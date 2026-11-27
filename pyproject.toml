@@ -2,6 +2,13 @@
 name = "maat-presupuesto"
 version = "0.0.1"
 requires-python = ">=3.12"
+# Las mismas de requirements.txt (un test lo revisa): Vercel instala desde este archivo.
+dependencies = [
+    "sqlalchemy>=2.0,<3",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.2",
+    "fastapi>=0.115",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
