@@ -14,6 +14,8 @@ ROL_DE_LA_API = "rol_api_prueba"
 
 ANALISTA = uuid.UUID("00000000-0000-0000-0000-0000000000a1")  # analista en la empresa C
 INACTIVO = uuid.UUID("00000000-0000-0000-0000-0000000000a2")
+RESPONSABLE = uuid.UUID("00000000-0000-0000-0000-0000000000a3")  # responsable en D, de un área
+AREA_D = uuid.UUID("00000000-0000-0000-0000-0000000000d1")
 PASSWORD = "una-contraseña-de-prueba"  # noqa: S105
 CONFIGURACION = Configuracion(jwt_secreto="secreto-de-los-tests-de-la-api-0123456789")
 # Argon2 barato: los parámetros de verdad pagan 64 MiB por hash.
