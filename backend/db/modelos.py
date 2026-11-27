@@ -5,13 +5,16 @@ La migración 0001 crea estas mismas tablas, y un test revisa que no se separen.
 """
 
 import uuid
+from datetime import datetime
 
 from sqlalchemy import (
     CheckConstraint,
+    DateTime,
     ForeignKey,
     ForeignKeyConstraint,
     Index,
     String,
+    Text,
     UniqueConstraint,
     text,
 )
@@ -97,3 +100,89 @@ class Centro(Base):
     tipo: Mapped[str] = mapped_column(String(15))
     area_id: Mapped[uuid.UUID]
     activo: Mapped[bool] = mapped_column(server_default=text("true"))
+
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
+    # la API lo guarda en minúsculas: CITEXT pediría habilitar la extensión en Azure
+    email: Mapped[str] = mapped_column(String(320), unique=True)
+    hash_password: Mapped[str] = mapped_column(Text)  # Argon2id, nunca la contraseña
+    activo: Mapped[bool] = mapped_column(server_default=text("true"))
+
+
+class Rol(Base):
+    __tablename__ = "roles"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
+    codigo: Mapped[str] = mapped_column(String(50), unique=True)
+    nombre: Mapped[str] = mapped_column(String(200))
+    es_sistema: Mapped[bool] = mapped_column(server_default=text("false"))
+    activo: Mapped[bool] = mapped_column(server_default=text("true"))
+
+
+class Permiso(Base):
+    __tablename__ = "permisos"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
+    codigo: Mapped[str] = mapped_column(String(50), unique=True)
+    nombre: Mapped[str] = mapped_column(String(200))
+    descripcion: Mapped[str | None] = mapped_column(Text)
+
+
+class RolPermiso(Base):
+    __tablename__ = "roles_permisos"
+    __table_args__ = (UniqueConstraint("rol_id", "permiso_id"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
+    rol_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("roles.id"))
+    permiso_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("permisos.id"))
+
+
+class Acceso(Base):
+    """El rol de un usuario en una empresa: uno por usuario y empresa."""
+
+    __tablename__ = "accesos"
+    # (id, empresa_id) es único para que las áreas de un acceso sean de su misma empresa
+    __table_args__ = (
+        UniqueConstraint("usuario_id", "empresa_id"),
+        UniqueConstraint("id", "empresa_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
+    usuario_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    empresa_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("empresas.id"), index=True)
+    rol_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("roles.id"))
+    activo: Mapped[bool] = mapped_column(server_default=text("true"))
+
+
+class AccesoArea(Base):
+    """Las áreas que ve un acceso; un acceso sin áreas ve todas (decisión 52)."""
+
+    __tablename__ = "accesos_areas"
+    __table_args__ = (
+        UniqueConstraint("acceso_id", "area_id"),
+        ForeignKeyConstraint(["acceso_id", "empresa_id"], ["accesos.id", "accesos.empresa_id"]),
+        ForeignKeyConstraint(["empresa_id", "area_id"], ["areas.empresa_id", "areas.id"]),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
+    acceso_id: Mapped[uuid.UUID]
+    empresa_id: Mapped[uuid.UUID]
+    area_id: Mapped[uuid.UUID]
+
+
+class Sesion(Base):
+    """Un refresh token revocable; el access token es un JWT que no se guarda."""
+
+    __tablename__ = "sesiones"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
+    usuario_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("usuarios.id"), index=True)
+    refresh_token_hash: Mapped[str] = mapped_column(Text)  # solo el hash, nunca el token
+    emitido_en: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=text("now()")
+    )
+    expira_en: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revocado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
