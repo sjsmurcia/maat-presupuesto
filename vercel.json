@@ -1,0 +1,9 @@
+{
+  "installCommand": "bash scripts/instalar_flutter.sh",
+  "buildCommand": "bash scripts/construir_web.sh",
+  "outputDirectory": "frontend/build/web",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
