@@ -42,6 +42,7 @@ class Area(Base):
     # (empresa_id, id) es único para que el área superior y el área de un centro
     # se puedan amarrar a la misma empresa con una llave foránea compuesta.
     __table_args__ = (
+        UniqueConstraint("empresa_id", "codigo"),
         UniqueConstraint("empresa_id", "nombre"),
         UniqueConstraint("empresa_id", "id"),
         ForeignKeyConstraint(
@@ -51,8 +52,10 @@ class Area(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=UUID_NUEVO)
     empresa_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("empresas.id"))
+    codigo: Mapped[str] = mapped_column(String(30))
     nombre: Mapped[str] = mapped_column(String(200))
     area_superior_id: Mapped[uuid.UUID | None]
+    activa: Mapped[bool] = mapped_column(server_default=text("true"))
 
 
 class Cuenta(Base):
@@ -93,3 +96,4 @@ class Centro(Base):
     codigo_superior: Mapped[str | None] = mapped_column(String(30))
     tipo: Mapped[str] = mapped_column(String(15))
     area_id: Mapped[uuid.UUID]
+    activo: Mapped[bool] = mapped_column(server_default=text("true"))
