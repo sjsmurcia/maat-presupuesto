@@ -1,4 +1,5 @@
 import pytest
+from psycopg.errors import InsufficientPrivilege
 from sqlalchemy import Connection, text
 from sqlalchemy.exc import DBAPIError
 
@@ -44,5 +45,7 @@ def test_rls_insertar_una_cuenta_de_otra_empresa_lanza_error(conexion: Connectio
         "VALUES (:b, '5301', 'Vigilancia', 'GASTO', true)"
     )
     # Act / Assert
-    with pytest.raises(DBAPIError, match="row-level security"):
+    with pytest.raises(DBAPIError) as error:
         conexion.execute(insertar, {"b": EMPRESA_B})
+    # el código del error no depende del idioma del servidor, el mensaje sí
+    assert isinstance(error.value.orig, InsufficientPrivilege)
