@@ -14,16 +14,22 @@ from backend.db.sesion import sesion_de_la_api
 from backend.seguridad import hashear_password
 from tests.api.datos_de_prueba import (
     ANALISTA,
+    AREA_D,
     CONFIGURACION,
     EMPRESA_C,
     EMPRESA_D,
     HASHER,
     INACTIVO,
     PASSWORD,
+    RESPONSABLE,
     ROL_DE_LA_API,
 )
 
-IDS = {"c": EMPRESA_C, "d": EMPRESA_D, "analista": ANALISTA, "inactivo": INACTIVO}
+IDS = {
+    "c": EMPRESA_C, "d": EMPRESA_D, "area_d": AREA_D,
+    "analista": ANALISTA, "inactivo": INACTIVO, "responsable": RESPONSABLE,
+}
+DE_LOS_USUARIOS = "IN (:analista, :inactivo, :responsable)"
 
 
 def _sembrar(conexion: Connection) -> None:
@@ -50,7 +56,8 @@ def _sembrar_usuarios(conexion: Connection) -> None:
         text(
             "INSERT INTO usuarios (id, email, hash_password, activo) VALUES "
             "(:analista, 'analista@ejemplo.edu', :h, true), "
-            "(:inactivo, 'inactivo@ejemplo.edu', :h, false)"
+            "(:inactivo, 'inactivo@ejemplo.edu', :h, false), "
+            "(:responsable, 'responsable@ejemplo.edu', :h, true)"
         ),
         {**IDS, "h": hashear_password(HASHER, PASSWORD)},
     )
@@ -58,6 +65,18 @@ def _sembrar_usuarios(conexion: Connection) -> None:
         text(
             "INSERT INTO accesos (usuario_id, empresa_id, rol_id)"
             " SELECT :analista, :c, id FROM roles WHERE codigo = 'analista'"
+            " UNION ALL SELECT :responsable, :d, id FROM roles WHERE codigo = 'responsable'"
+        ),
+        IDS,
+    )
+    conexion.execute(
+        text("INSERT INTO areas (id, empresa_id, codigo, nombre) VALUES (:area_d, :d, 'TI', 'TI')"),
+        IDS,
+    )
+    conexion.execute(
+        text(
+            "INSERT INTO accesos_areas (acceso_id, empresa_id, area_id)"
+            " SELECT id, :d, :area_d FROM accesos WHERE usuario_id = :responsable"
         ),
         IDS,
     )
@@ -72,9 +91,11 @@ def _crear_rol_de_la_api(conexion: Connection) -> None:
 
 
 def _limpiar(conexion: Connection) -> None:
-    conexion.execute(text("DELETE FROM sesiones WHERE usuario_id IN (:analista, :inactivo)"), IDS)
-    conexion.execute(text("DELETE FROM accesos WHERE usuario_id IN (:analista, :inactivo)"), IDS)
-    conexion.execute(text("DELETE FROM usuarios WHERE id IN (:analista, :inactivo)"), IDS)
+    conexion.execute(text("DELETE FROM accesos_areas WHERE empresa_id = :d"), IDS)
+    conexion.execute(text(f"DELETE FROM sesiones WHERE usuario_id {DE_LOS_USUARIOS}"), IDS)
+    conexion.execute(text(f"DELETE FROM accesos WHERE usuario_id {DE_LOS_USUARIOS}"), IDS)
+    conexion.execute(text(f"DELETE FROM usuarios WHERE id {DE_LOS_USUARIOS}"), IDS)
+    conexion.execute(text("DELETE FROM areas WHERE empresa_id = :d"), IDS)
     conexion.execute(text("DELETE FROM cuentas WHERE empresa_id IN (:c, :d)"), IDS)
     conexion.execute(text("DELETE FROM empresas WHERE id IN (:c, :d)"), IDS)
     conexion.execute(text(f"DROP OWNED BY {ROL_DE_LA_API}"))
