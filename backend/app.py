@@ -2,6 +2,8 @@
 
 from fastapi import APIRouter, FastAPI
 
+from backend.cuentas import rutas_de_cuentas
+
 app = FastAPI(title="Maat Presupuesto")
 api = APIRouter(prefix="/api")
 
@@ -12,4 +14,5 @@ def ver_salud() -> dict[str, str]:
     return {"estado": "ok"}
 
 
+api.include_router(rutas_de_cuentas)
 app.include_router(api)
