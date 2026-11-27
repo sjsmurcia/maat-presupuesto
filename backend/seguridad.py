@@ -83,5 +83,5 @@ def partir_refresh(token: str) -> tuple[uuid.UUID, str] | None:
         return None
 
 
-def comparar_hash(a: str, b: str) -> bool:
+def es_el_mismo_hash(a: str, b: str) -> bool:
     return hmac.compare_digest(a, b)
