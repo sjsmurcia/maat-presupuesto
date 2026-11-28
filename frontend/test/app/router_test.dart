@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:maat_presupuesto/app/barra_lateral.dart';
 import 'package:maat_presupuesto/app/destinos.dart';
@@ -6,9 +7,11 @@ import 'package:maat_presupuesto/app/router.dart';
 import 'package:maat_presupuesto/core/tema/tema_maat.dart';
 import 'package:maat_presupuesto/core/tema/tokens_maat.dart';
 
-Widget _app(String inicio) => MaterialApp.router(
-  theme: temaMaat(TokensMaat.claro, Brightness.light),
-  routerConfig: crearRouter(inicio: inicio),
+Widget _app(String inicio) => ProviderScope(
+  child: MaterialApp.router(
+    theme: temaMaat(TokensMaat.claro, Brightness.light),
+    routerConfig: crearRouter(inicio: inicio),
+  ),
 );
 
 void main() {
